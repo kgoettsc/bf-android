@@ -10,10 +10,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.myapplication.FeaturePullTask;
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
+import com.example.myapplication.Venue;
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -68,11 +70,15 @@ public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickL
         PointF pointf = mapboxMap.getProjection().toScreenLocation(point);
         RectF rectF = new RectF(pointf.x - 10, pointf.y - 10, pointf.x + 10, pointf.y + 10);
         List<Feature> featureList = mapboxMap.queryRenderedFeatures(rectF, geoJsonLayerId);
+        FragmentManager fm = getFragmentManager();
+        Venue venue;
+
         if (featureList.size() > 0) {
             for (Feature feature : featureList) {
-                System.out.println(feature.bbox());
-//                Timber.d("Feature found with %1$s", feature.toJson());
-                Toast.makeText(getContext(), feature.properties().get("name").toString(), Toast.LENGTH_SHORT).show();
+                venue = new Venue(feature.properties());
+                Toast.makeText(getContext(), venue.getName(), Toast.LENGTH_SHORT).show();
+                VenueDialogFragment venueDialogFragment = new VenueDialogFragment(venue);
+                venueDialogFragment.show(fm, "fragment_edit_name");
             }
             return true;
         }
