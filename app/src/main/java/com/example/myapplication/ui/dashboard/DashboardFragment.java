@@ -13,27 +13,30 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.myapplication.FeaturePullTask;
-import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.Venue;
+import com.mapbox.android.core.permissions.PermissionsListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
+import com.mapbox.mapboxsdk.location.modes.CameraMode;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.layers.FillLayer;
 
 import java.util.List;
 
-public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickListener {
+public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickListener, PermissionsListener {
 
-    private DashboardViewModel dashboardViewModel;
+    private PermissionsManager permissionsManager;
     private MapView mapView;
     private MapboxMap mapboxMap;
 
-    private static final String geoJsonSourceId = "geoJsonData";
     private static final String geoJsonLayerId = "venue-layer";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -47,12 +50,13 @@ public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickL
             @Override
             public void onMapReady(final MapboxMap mapboxMap) {
                 DashboardFragment.this.mapboxMap = mapboxMap;
-//                mapboxMap.setStyle(Style.MAPBOX_STREETS);
+
                 Style.Builder styleBuilder = new Style.Builder().fromUri("mapbox://styles/kgoettsche/cjfrlbsyb67022rqug9l2k4bc");
                 mapboxMap.setStyle(styleBuilder, new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
                         mapboxMap.addOnMapClickListener(DashboardFragment.this);
+                        enableLocationComponent(style);
                     }
                 });
 
@@ -76,7 +80,7 @@ public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickL
         if (featureList.size() > 0) {
             for (Feature feature : featureList) {
                 venue = new Venue(feature.properties());
-                Toast.makeText(getContext(), venue.getName(), Toast.LENGTH_SHORT).show();
+
                 VenueDialogFragment venueDialogFragment = new VenueDialogFragment(venue);
                 venueDialogFragment.show(fm, "fragment_edit_name");
             }
@@ -85,6 +89,53 @@ public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickL
         return false;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        Toast.makeText(getContext(), R.string.app_name, Toast.LENGTH_LONG).show();
+    }
 
+    @SuppressWarnings( {"MissingPermission"})
+    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
+        // Check if permissions are enabled and if not request
+        if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
+
+            // Get an instance of the component
+            LocationComponent locationComponent = mapboxMap.getLocationComponent();
+
+            // Activate with options
+            locationComponent.activateLocationComponent(
+                    LocationComponentActivationOptions.builder(getContext(), loadedMapStyle).build());
+
+            // Enable to make component visible
+            locationComponent.setLocationComponentEnabled(true);
+
+            // Set the component's camera mode
+            locationComponent.setCameraMode(CameraMode.TRACKING);
+
+            // Set the component's render mode
+            locationComponent.setRenderMode(RenderMode.COMPASS);
+        } else {
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(getActivity());
+        }
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                @Override
+                public void onStyleLoaded(@NonNull Style style) {
+                    enableLocationComponent(style);
+                }
+            });
+        } else {
+            Toast.makeText(getContext(), R.string.app_name, Toast.LENGTH_LONG).show();
+        }
+    }
 }
