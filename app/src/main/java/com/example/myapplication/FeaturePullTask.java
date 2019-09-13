@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 
@@ -8,6 +9,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.io.BufferedReader;
@@ -22,6 +24,9 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillOutlineColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 public class FeaturePullTask extends AsyncTask<MapboxMap, Void, String> {
@@ -78,16 +83,24 @@ public class FeaturePullTask extends AsyncTask<MapboxMap, Void, String> {
         GeoJsonSource geoJsonSource = new GeoJsonSource("geojson-source", result);
         mapboxMap.getStyle().addSource(geoJsonSource);
 
-        CircleLayer circleLayer = new CircleLayer("venue-layer", "geojson-source");
-        circleLayer.withProperties(
-                circleOpacity(0.8F),
-                visibility(Property.VISIBLE),
-                fillOutlineColor("#FFFFFF"),
-                circleStrokeWidth(1f),
-                circleRadius(FeaturePullTask.getCircleRadius(mapboxMap.getCameraPosition())),
-                circleColor(Color.parseColor("#3794B3"))
+//        CircleLayer circleLayer = new CircleLayer("venue-layer", "geojson-source");
+//        circleLayer.withProperties(
+//                circleOpacity(0.8F),
+//                visibility(Property.VISIBLE),
+//                fillOutlineColor("#FFFFFF"),
+//                circleStrokeWidth(1f),
+//                circleRadius(FeaturePullTask.getCircleRadius(mapboxMap.getCameraPosition())),
+//                circleColor(Color.parseColor("#3794B3"))
+//        );
+
+        SymbolLayer symbolLayer = new SymbolLayer("venue-layer", "geojson-source");
+        symbolLayer.withProperties(
+                iconImage("ICON_ID"),
+                iconAllowOverlap(true),
+                iconOffset(new Float[] {0f, -9f})
         );
 
-        mapboxMap.getStyle().addLayer(circleLayer);
+//        mapboxMap.getStyle().addLayer(circleLayer);
+        mapboxMap.getStyle().addLayer(symbolLayer);
     }
 }

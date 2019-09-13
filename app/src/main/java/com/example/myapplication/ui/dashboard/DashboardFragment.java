@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.dashboard;
 
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -51,7 +52,11 @@ public class DashboardFragment extends Fragment implements MapboxMap.OnMapClickL
             public void onMapReady(final MapboxMap mapboxMap) {
                 DashboardFragment.this.mapboxMap = mapboxMap;
 
-                Style.Builder styleBuilder = new Style.Builder().fromUri("mapbox://styles/kgoettsche/cjfrlbsyb67022rqug9l2k4bc");
+                Style.Builder styleBuilder = new
+                        Style.Builder().fromUri("mapbox://styles/kgoettsche/cjfrlbsyb67022rqug9l2k4bc")
+                        .withImage("ICON_ID", BitmapFactory.decodeResource(
+                                DashboardFragment.this.getResources(), R.drawable.red_marker));
+
                 mapboxMap.setStyle(styleBuilder, new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
