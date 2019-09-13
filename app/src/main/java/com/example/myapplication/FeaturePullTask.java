@@ -17,6 +17,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillOutlineColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
+
 public class FeaturePullTask extends AsyncTask<MapboxMap, Void, String> {
     MapboxMap mapboxMap;
 
@@ -72,12 +79,13 @@ public class FeaturePullTask extends AsyncTask<MapboxMap, Void, String> {
         mapboxMap.getStyle().addSource(geoJsonSource);
 
         CircleLayer circleLayer = new CircleLayer("venue-layer", "geojson-source");
-        circleLayer.setProperties(
-                PropertyFactory.visibility(Property.VISIBLE),
-                PropertyFactory.fillOutlineColor("#FFFFFF"),
-                PropertyFactory.circleStrokeWidth(1f),
-                PropertyFactory.circleRadius(FeaturePullTask.getCircleRadius(mapboxMap.getCameraPosition())),
-                PropertyFactory.circleColor(Color.argb(1, 55, 148, 179))
+        circleLayer.withProperties(
+                circleOpacity(0.8F),
+                visibility(Property.VISIBLE),
+                fillOutlineColor("#FFFFFF"),
+                circleStrokeWidth(1f),
+                circleRadius(FeaturePullTask.getCircleRadius(mapboxMap.getCameraPosition())),
+                circleColor(Color.parseColor("#3794B3"))
         );
 
         mapboxMap.getStyle().addLayer(circleLayer);
